@@ -1,0 +1,58 @@
+# LibreChat Addon - Production Deployment
+
+services:
+  # OpenAI-compatible wrapper
+  librechat-wrapper:
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/librechat-wrapper:latest
+    container_name: atomic_pumpkin_librechat
+    restart: unless-stopped
+    ports:
+      - "${WRAPPER_PORT:-8070}:8070"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OLLAMA_API_URL=${OLLAMA_API_URL:-http://host.docker.internal:11434}
+    networks:
+      - atomic_pumpkin
+    depends_on:
+      - engine
+
+  # LibreChat UI
+  librechat:
+    image: librechat/librechat:latest
+    container_name: librechat
+    restart: unless-stopped
+    ports:
+      - "${LIBRECHAT_PORT:-3080}:3080"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - MONGO_URI=mongodb://mongodb:27017/LibreChat
+      - HOST=0.0.0.0
+      - PORT=3080
+      - ALLOW_EMAIL_LOGIN=true
+      - ALLOW_REGISTRATION=true
+      - ALLOW_SOCIAL_LOGIN=false
+    volumes:
+      - ./addons/librechat/librechat.yaml:/app/librechat.yaml
+      - ./addons/librechat/logs:/app/api/logs
+    depends_on:
+      - mongodb
+      - librechat-wrapper
+    networks:
+      - atomic_pumpkin
+
+  # MongoDB for LibreChat
+  mongodb:
+    image: mongo:latest
+    container_name: librechat_mongodb
+    restart: unless-stopped
+    volumes:
+      - ./addons/librechat/mongodb_data:/data/db
+    networks:
+      - atomic_pumpkin
+
+networks:
+  atomic_pumpkin:
+    external: true

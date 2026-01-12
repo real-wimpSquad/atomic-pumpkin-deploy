@@ -1,0 +1,42 @@
+# Atomic Pumpkin - Production Deployment
+# Uses pre-built images from GitHub Container Registry
+
+services:
+  # Qdrant vector database
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    restart: unless-stopped
+    ports:
+      - "${QDRANT_REST_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - ./qdrant_data:/qdrant/storage
+    networks:
+      - atomic_pumpkin
+
+  # Atomic Pumpkin Engine
+  engine:
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/engine:latest
+    container_name: atomic_pumpkin_engine
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8069}:8069"
+    volumes:
+      - ./vdb_data:/app/project_vdb
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=8069
+    depends_on:
+      - qdrant
+    networks:
+      - atomic_pumpkin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  atomic_pumpkin:
+    driver: bridge
