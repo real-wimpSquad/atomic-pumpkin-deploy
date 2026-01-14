@@ -17,7 +17,7 @@ services:
 
   # Atomic Pumpkin Engine
   engine:
-    image: ghcr.io/real-wimpsquad/atomic-pumpkin/engine:latest
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/engine:stable
     container_name: atomic_pumpkin_engine
     restart: unless-stopped
     ports:
