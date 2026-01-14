@@ -55,4 +55,4 @@ services:
 
 networks:
   atomic_pumpkin:
-    external: true
+    driver: bridge
