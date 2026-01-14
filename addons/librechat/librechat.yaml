@@ -4,7 +4,7 @@ endpoints:
   custom:
     - name: "VDB"
       apiKey: "placeholder"
-      baseURL: "http://openai_wrapper:8070/v1"
+      baseURL: "http://librechat-wrapper:8070/v1"
       models:
         default:
           - "gpt-5-nano"
