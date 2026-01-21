@@ -1,6 +1,9 @@
 # Ignore everything by default
 *
 
+# Backups directory
+backups/
+
 # But track these root files
 !.gitignore
 !docker-compose.yml

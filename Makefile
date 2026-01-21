@@ -1,4 +1,4 @@
-.PHONY: help start up stop down clean logs
+.PHONY: help start up stop down clean logs backup
 
 # Composable Addons System for Atomic Pumpkin Deploy
 # Uses pre-built images from ghcr.io
@@ -42,6 +42,7 @@ help:
 	@echo "  make down                - Stop and remove containers"
 	@echo "  make clean               - Stop and remove all data"
 	@echo "  make logs                - View logs"
+	@echo "  make backup              - Create timestamped tarball backup"
 	@echo ""
 	@echo "Examples:"
 	@echo "  make                                  # Minimal stack"
@@ -60,7 +61,7 @@ start:
 		echo "   Addons: (none - use ADDONS=\"...\" to add)"; \
 	fi
 	@echo ""
-	@docker-compose $(COMPOSE_FILES) up -d
+	@docker compose $(COMPOSE_FILES) up -d
 	@echo ""
 	@echo "✓ Services started"
 	@echo ""
@@ -79,22 +80,38 @@ up: start
 stop:
 	@$(call build_compose_files)
 	@echo "Stopping services..."
-	@docker-compose $(COMPOSE_FILES) stop
+	@docker compose $(COMPOSE_FILES) stop
 	@echo "✓ Stopped (data preserved)"
 
 down:
 	@$(call build_compose_files)
 	@echo "Stopping and removing containers..."
-	@docker-compose $(COMPOSE_FILES) down
+	@docker compose $(COMPOSE_FILES) down
 	@echo "✓ Containers removed (data preserved)"
 
 clean:
 	@echo "⚠️  This will remove ALL containers and data volumes"
 	@read -p "Continue? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
 	@$(call build_compose_files)
-	@docker-compose $(COMPOSE_FILES) down -v
+	@docker compose $(COMPOSE_FILES) down -v
 	@echo "✓ Cleaned (all data removed)"
 
 logs:
 	@$(call build_compose_files)
-	@docker-compose $(COMPOSE_FILES) logs -f
+	@docker compose $(COMPOSE_FILES) logs -f
+
+backup:
+	@mkdir -p backups
+	@TIMESTAMP=$$(date +%Y%m%d-%H%M%S); \
+	BACKUP_FILE="backups/atomic-pumpkin-backup-$$TIMESTAMP.tar.gz"; \
+	echo "Creating backup: $$BACKUP_FILE"; \
+	tar --exclude='./backups' \
+		--exclude='./.git' \
+		--exclude='./qdrant' \
+		--exclude='./project_vdb' \
+		--exclude='./postgres_data' \
+		--exclude='./redis_data' \
+		--exclude='*.log' \
+		-czf "$$BACKUP_FILE" .; \
+	echo "✓ Backup created: $$BACKUP_FILE"; \
+	ls -lh "$$BACKUP_FILE"
