@@ -1,29 +1,43 @@
-# Atomic Pumpkin - Production Deployment
-# Uses pre-built images from GitHub Container Registry
+# ============================================================================
+# Copyright 2026 Jon Sherlin (real-wimpSquad)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ============================================================================
+
+# Production docker-compose using pre-built images from GitHub Container Registry
+# Usage: docker-compose -f docker-compose.prod.yml up -d
 
 services:
-  # Qdrant vector database
+  # Qdrant vector database (internal only in production)
   qdrant:
     image: qdrant/qdrant:latest
     container_name: qdrant
     restart: unless-stopped
-    ports:
-      - "${QDRANT_REST_PORT:-6333}:6333"
-      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    # ports: exposed only via engine, not directly
     volumes:
-      - ./qdrant_data:/qdrant/storage
+      - ./qdrant:/qdrant/storage
     networks:
       - atomic_pumpkin
 
-  # Atomic Pumpkin Engine
+  # Engine Server (pre-built image)
   engine:
     image: ghcr.io/real-wimpsquad/atomic-pumpkin/engine:stable
-    container_name: atomic_pumpkin_engine
+    container_name: engine
     restart: unless-stopped
     ports:
-      - "${API_PORT:-8069}:8069"
+      - "8069:8069"  # HTTP API
     volumes:
-      - ./vdb_data:/app/project_vdb
+      - ./project_vdb:/app/project_vdb
     environment:
       - PYTHONUNBUFFERED=1
       - PORT=8069
@@ -32,10 +46,133 @@ services:
     networks:
       - atomic_pumpkin
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8069/health"]
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8069/health', timeout=5).read()"]
       interval: 30s
       timeout: 10s
       retries: 3
+
+  # Postgres - LiteLLM database (internal only)
+  postgres:
+    image: postgres:16-alpine
+    container_name: ape_postgres
+    restart: unless-stopped
+    # ports: internal only, not exposed in production
+    environment:
+      - POSTGRES_DB=litellm
+      - POSTGRES_USER=litellm
+      - POSTGRES_PASSWORD=litellm_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - atomic_pumpkin
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # Redis - LiteLLM cache + wrapper verbatim storage (internal only)
+  redis:
+    image: redis:7-alpine
+    container_name: ape_redis
+    restart: unless-stopped
+    # ports: internal only, not exposed in production
+    volumes:
+      - redis_data:/data
+    networks:
+      - atomic_pumpkin
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # LiteLLM - Unified provider proxy (internal only, accessed via wrapper)
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: ape_litellm
+    restart: unless-stopped
+    # ports: internal only, wrapper is sole entry point
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - DATABASE_URL=postgresql://litellm:litellm_pass@postgres:5432/litellm
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - atomic_pumpkin
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4000/health/readiness', timeout=5).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # Wrapper - Agentic orchestrator with APE tools (pre-built image)
+  wrapper:
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/wrapper:stable
+    container_name: ape_wrapper
+    restart: unless-stopped
+    ports:
+      - "8070:8070"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=postgresql://litellm:litellm_pass@postgres:5432/litellm
+      - BASE_URL=${BASE_URL:-https://ape.wimps.win:8070}
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - FROM_EMAIL=${FROM_EMAIL:-accounts@ape.wimps.win}
+    depends_on:
+      engine:
+        condition: service_healthy
+      litellm:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - atomic_pumpkin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8070/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP Server - SSE transport for remote access (pre-built image)
+  mcp-server:
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/mcp-server:stable
+    container_name: ape_mcp_server
+    restart: unless-stopped
+    ports:
+      - "8071:8071"
+    environment:
+      - APE_URL=http://engine:8069
+      - WRAPPER_URL=${BASE_URL:-https://ape.wimps.win:8070}
+      - JWT_SECRET=${JWT_SECRET}
+      - REQUIRE_AUTH=true
+      - PORT=8071
+    depends_on:
+      engine:
+        condition: service_healthy
+    networks:
+      - atomic_pumpkin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8071/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
 
 networks:
   atomic_pumpkin:
