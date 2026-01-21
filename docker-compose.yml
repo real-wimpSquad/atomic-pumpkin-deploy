@@ -146,30 +146,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # MCP Server - SSE transport for remote access (pre-built image)
-  mcp-server:
-    image: ghcr.io/real-wimpsquad/atomic-pumpkin/mcp-server:stable
-    container_name: ape_mcp_server
-    restart: unless-stopped
-    ports:
-      - "8071:8071"
-    environment:
-      - APE_URL=http://engine:8069
-      - WRAPPER_URL=${BASE_URL:-https://ape.wimps.win:8070}
-      - JWT_SECRET=${JWT_SECRET}
-      - REQUIRE_AUTH=true
-      - PORT=8071
-    depends_on:
-      engine:
-        condition: service_healthy
-    networks:
-      - atomic_pumpkin
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8071/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
 volumes:
   postgres_data:
   redis_data:

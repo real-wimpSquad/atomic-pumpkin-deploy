@@ -8,6 +8,7 @@
 !README.md
 !EASY_START.md
 !LICENSE
+!Makefile
 
 # Track addon directories and their config files
 !addons/
