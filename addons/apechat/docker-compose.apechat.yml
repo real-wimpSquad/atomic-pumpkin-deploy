@@ -29,7 +29,7 @@ services:
       - "3080:3000"  # External 3080 (CloudFlare) -> Internal 3000
     environment:
       - NODE_ENV=production
-      - ORIGIN=http://localhost:3080
+      - ORIGIN=http://127.0.0.1:3080
       - WRAPPER_URL=http://wrapper:8070
       - APE_URL=http://engine:8069
     networks:
