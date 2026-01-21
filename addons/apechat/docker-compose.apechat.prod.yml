@@ -20,7 +20,7 @@
 
 services:
   apechat:
-    image: ghcr.io/real-wimpsquad/atomic-pumpkin/apechat:latest
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/apechat:stable
     container_name: ape_ui
     restart: unless-stopped
     ports:
