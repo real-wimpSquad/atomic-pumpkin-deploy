@@ -1,25 +1,20 @@
-# MCP Server Addon - Development (build from source)
+# MCP Server Addon - Production (pre-built image)
 # SSE transport for remote Claude Desktop/CLI access
-# Usage: make dev ADDONS="mcp-server"
+# Usage: make ADDONS="mcp-server" or make ADDONS="apechat mcp-server"
 
 services:
   mcp-server:
-    build:
-      context: ../../mcp-server
-      dockerfile: Dockerfile
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/mcp-server:stable
     container_name: ape_mcp_server
     restart: unless-stopped
     ports:
       - "8071:8071"
-    volumes:
-      - ../../mcp-server:/app
     environment:
       - APE_URL=http://engine:8069
-      - WRAPPER_URL=${BASE_URL:-http://127.0.0.1:8070}
-      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-in-production}
-      - REQUIRE_AUTH=${MCP_REQUIRE_AUTH:-false}
+      - WRAPPER_URL=http://wrapper:8070
+      - JWT_SECRET=${JWT_SECRET}
+      - REQUIRE_AUTH=true
       - PORT=8071
-      - PYTHONUNBUFFERED=1
     depends_on:
       engine:
         condition: service_healthy

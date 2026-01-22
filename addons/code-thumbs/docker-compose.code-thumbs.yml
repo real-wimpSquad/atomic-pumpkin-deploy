@@ -1,10 +1,10 @@
-# Code Thumbs Addon - Development (uses pre-built :latest images)
+# Code Thumbs Addon - Production Deployment
 # Multi-language code formatting, linting, and auto-fixing tools
 
 services:
   # Code formatter/linter tools container (pre-built image)
   code-thumbs:
-    image: ghcr.io/real-wimpsquad/code-thumbs:latest
+    image: ghcr.io/real-wimpsquad/code-thumbs:stable
     container_name: ape_code_thumbs
     restart: unless-stopped
     volumes:
@@ -16,7 +16,7 @@ services:
 
   # Code Thumbs API - HTTP/MCP/OpenAI interface (pre-built image)
   code-thumbs-api:
-    image: ghcr.io/real-wimpsquad/code-thumbs-api:latest
+    image: ghcr.io/real-wimpsquad/code-thumbs-api:stable
     container_name: ape_code_thumbs_api
     restart: unless-stopped
     ports:
@@ -40,3 +40,4 @@ services:
 
 networks:
   atomic_pumpkin:
+    driver: bridge

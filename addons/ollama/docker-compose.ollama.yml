@@ -1,4 +1,4 @@
-# Ollama Addon - Development (containerized local LLM server)
+# Ollama Addon - Production (containerized local LLM server)
 # Multi-language model support with persistent storage
 
 services:

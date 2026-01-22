@@ -14,15 +14,13 @@
 # limitations under the License.
 # ============================================================================
 
-# APEChat UI - Development (builds from source)
+# APEChat UI - Production (pre-built image)
 # Usage from repo root:
-#   docker-compose -f docker-compose.yml -f addons/apechat/docker-compose.apechat.yml up -d
+#   docker-compose -f docker-compose.prod.yml -f addons/apechat/docker-compose.apechat.prod.yml up -d
 
 services:
   apechat:
-    build:
-      context: ./addons/apechat
-      dockerfile: Dockerfile
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/apechat:stable
     container_name: ape_ui
     restart: unless-stopped
     ports:
@@ -37,6 +35,11 @@ services:
     depends_on:
       - wrapper
       - engine
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   atomic_pumpkin:
