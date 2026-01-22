@@ -12,6 +12,7 @@ services:
     environment:
       - APE_URL=http://engine:8069
       - WRAPPER_URL=http://wrapper:8070
+      - PUBLIC_URL=${MCP_PUBLIC_URL:-https://mcp.wimps.win}
       - JWT_SECRET=${JWT_SECRET}
       - REQUIRE_AUTH=true
       - PORT=8071
