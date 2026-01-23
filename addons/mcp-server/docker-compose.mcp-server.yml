@@ -1,5 +1,5 @@
 # MCP Server Addon - Production (pre-built image)
-# SSE transport for remote Claude Desktop/CLI access
+# StreamableHTTP transport for remote Claude Desktop/CLI access
 # Usage: make ADDONS="mcp-server" or make ADDONS="apechat mcp-server"
 
 services:
