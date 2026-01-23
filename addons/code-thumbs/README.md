@@ -135,6 +135,8 @@ Code Thumbs supports **17 languages** with multiple tools per language:
 
 **Workflow:** `POST/format/file{path}→read+fmt+write_atomic` (1 call, auto-detect lang)
 
+**Paths:** Relative to atomic-pumpkin root (e.g., `src/api_server.py`, not `/workspace/src/api_server.py`)
+
 ```bash
 # Recommended: Atomic file operations
 POST /format/file {"path":"src/main.py"}           # → tool:ruff|changed:yes\n\n{code}
