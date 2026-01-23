@@ -16,6 +16,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - REQUIRE_AUTH=true
       - PORT=8071
+      - NODE_ENV=production
     depends_on:
       engine:
         condition: service_healthy

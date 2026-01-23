@@ -79,6 +79,7 @@ services:
     # ports: internal only, not exposed in production
     volumes:
       - redis_data:/data
+    command: redis-server --appendonly yes --appendfsync everysec --save 60 1
     networks:
       - atomic_pumpkin
     healthcheck:
