@@ -101,16 +101,12 @@ logs:
 	@docker compose $(COMPOSE_FILES) logs -f
 
 backup:
-	@mkdir -p backups
+	@mkdir -p ../bak
 	@TIMESTAMP=$$(date +%Y%m%d-%H%M%S); \
-	BACKUP_FILE="backups/atomic-pumpkin-backup-$$TIMESTAMP.tar.gz"; \
+	BACKUP_FILE="../bak/ape-backup-$$TIMESTAMP.tar.gz"; \
 	echo "Creating backup: $$BACKUP_FILE"; \
 	tar --exclude='./backups' \
 		--exclude='./.git' \
-		--exclude='./qdrant' \
-		--exclude='./project_vdb' \
-		--exclude='./postgres_data' \
-		--exclude='./redis_data' \
 		--exclude='*.log' \
 		-czf "$$BACKUP_FILE" .; \
 	echo "✓ Backup created: $$BACKUP_FILE"; \
