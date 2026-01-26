@@ -11,14 +11,16 @@ services:
       - "8071:8071"
     environment:
       - APE_URL=http://engine:8069
-      - WRAPPER_URL=http://wrapper:8070
-      - PUBLIC_URL=${MCP_PUBLIC_URL:-https://mcp.wimps.win}
+      - REDIS_URL=redis://redis:6379
+      - OAUTH_URL=${OAUTH_URL:-https://auth.wimps.win}
       - JWT_SECRET=${JWT_SECRET}
       - REQUIRE_AUTH=true
       - PORT=8071
       - NODE_ENV=production
     depends_on:
       engine:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - atomic_pumpkin

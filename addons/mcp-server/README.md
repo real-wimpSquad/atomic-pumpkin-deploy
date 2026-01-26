@@ -2,7 +2,7 @@
 
 **StreamableHTTP transport exposing APE v6.0 memory/graph ops to Claude Desktop/CLI**
 
-Uses MCP SDK 1.25+ (StreamableHTTPServerTransport, SSE deprecated). OAuth proxy to wrapper for auth.
+Uses MCP SDK 1.25+ (StreamableHTTPServerTransport, SSE deprecated). OAuth discovery points to wrapper directly (no proxy).
 
 ## Usage
 
@@ -21,7 +21,8 @@ make ADDONS="apechat mcp-server ollama"
 
 Set in `.env`:
 - `JWT_SECRET` - Auth token (`openssl rand -hex 32`)
-- `MCP_PUBLIC_URL` - Public endpoint (default: `https://mcp.wimps.win`)
+- `OAUTH_URL` - OAuth endpoint (default: `https://mcp.wimps.win` → wrapper)
+- `REDIS_URL` - Session persistence (default: `redis://redis:6379`)
 - `MCP_REQUIRE_AUTH` - `false` for dev (default: `true`)
 
 ## Tools (v6.0 API - 18 Comprehensive Tools)
@@ -57,7 +58,7 @@ Set in `.env`:
 
 - `:8071/mcp` - MCP StreamableHTTP endpoint
 - `:8071/health` - Health check
-- `:8071/oauth/*` - OAuth proxy → wrapper
+- `:8071/.well-known/*` - OAuth discovery → points to wrapper
 
 ## Client Setup
 
@@ -66,4 +67,5 @@ See `/mcp-server/CLIENT_SETUP.md` for Claude Desktop/CLI connection.
 ## Dependencies
 
 - `engine:8069` - APE core (auto via compose)
-- `wrapper:8070` - OAuth/orchestration (base stack)
+- `redis:6379` - Session token persistence (24h TTL)
+- `wrapper:8070` - OAuth handled directly at infra level (Caddy/nginx routes)

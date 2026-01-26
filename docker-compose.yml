@@ -131,6 +131,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - DATABASE_URL=postgresql://litellm:litellm_pass@postgres:5432/litellm
       - BASE_URL=${BASE_URL:-https://ape.wimps.win:8070}
+      - OAUTH_BASE_URL=${OAUTH_BASE_URL:-https://auth.wimps.win}
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - FROM_EMAIL=${FROM_EMAIL:-accounts@ape.wimps.win}
