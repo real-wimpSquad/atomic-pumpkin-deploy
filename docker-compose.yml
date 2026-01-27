@@ -65,6 +65,21 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - atomic_pumpkin
+    # Shared memory for postgres (required for proper operation)
+    shm_size: 256mb
+    # Give postgres time to checkpoint on shutdown (default 10s is too short)
+    stop_grace_period: 30s
+    # Ensure data durability - checkpoint more frequently, sync on commit
+    command:
+      - postgres
+      - -c
+      - checkpoint_timeout=60
+      - -c
+      - checkpoint_completion_target=0.9
+      - -c
+      - synchronous_commit=on
+      - -c
+      - shared_buffers=128MB
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U litellm"]
       interval: 10s
@@ -130,11 +145,13 @@ services:
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - JWT_SECRET=${JWT_SECRET}
       - DATABASE_URL=postgresql://litellm:litellm_pass@postgres:5432/litellm
-      - BASE_URL=${BASE_URL:-https://ape.wimps.win:8070}
+      - BASE_URL=${BASE_URL:-https://chat.wimps.win}
       - OAUTH_BASE_URL=${OAUTH_BASE_URL:-https://auth.wimps.win}
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - FROM_EMAIL=${FROM_EMAIL:-accounts@ape.wimps.win}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
     depends_on:
       engine:
         condition: service_healthy

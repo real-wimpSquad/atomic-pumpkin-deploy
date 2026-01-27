@@ -1,6 +1,6 @@
-# MCP Server Addon - v6.0
+# MCP Server Addon - v6.3
 
-**StreamableHTTP transport exposing APE v6.0 memory/graph ops to Claude Desktop/CLI**
+**StreamableHTTP transport exposing APE v6.3 memory/graph ops to LLM agents**
 
 Uses MCP SDK 1.25+ (StreamableHTTPServerTransport, SSE deprecated). OAuth discovery points to wrapper directly (no proxy).
 
@@ -25,7 +25,7 @@ Set in `.env`:
 - `REDIS_URL` - Session persistence (default: `redis://redis:6379`)
 - `MCP_REQUIRE_AUTH` - `false` for dev (default: `true`)
 
-## Tools (v6.0 API - 18 Comprehensive Tools)
+## Tools (v6.3 API - 18 Comprehensive Tools)
 
 | MCP Tool | API Endpoint | Description |
 |----------|--------------|-------------|
@@ -62,7 +62,7 @@ Set in `.env`:
 
 ## Client Setup
 
-See `/mcp-server/CLIENT_SETUP.md` for Claude Desktop/CLI connection.
+See `/mcp-server/CLIENT_SETUP.md` for LLM agents connection.
 
 ## Dependencies
 
