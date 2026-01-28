@@ -154,6 +154,7 @@ services:
       - DATABASE_URL=postgresql://litellm:litellm_pass@postgres:5432/litellm
       - BASE_URL=${BASE_URL:-https://chat.wimps.win}
       - OAUTH_BASE_URL=${OAUTH_BASE_URL:-https://auth.wimps.win}
+      - MCP_URL=${MCP_URL:-https://mcp.wimps.win}
       - ENVIRONMENT=${ENVIRONMENT:-production}
       - RESEND_API_KEY=${RESEND_API_KEY:-}
       - FROM_EMAIL=${FROM_EMAIL:-accounts@ape.wimps.win}
