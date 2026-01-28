@@ -28,13 +28,13 @@ services:
     environment:
       - NODE_ENV=production
       - ORIGIN=http://127.0.0.1:3080
-      - WRAPPER_URL=http://wrapper:8070
-      - APE_URL=http://engine:8069
+      - WRAPPER_URL=http://ape-api:8070
+      - APE_URL=http://ape-core:8069
     networks:
       - atomic_pumpkin
     depends_on:
-      - wrapper
-      - engine
+      - ape-api
+      - ape-core
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000"]
       interval: 30s

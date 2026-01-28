@@ -29,10 +29,10 @@ services:
     networks:
       - atomic_pumpkin
 
-  # Engine Server (pre-built image, with optional MCP transport)
-  engine:
-    image: ghcr.io/real-wimpsquad/atomic-pumpkin/engine:stable
-    container_name: engine
+  # APE Core - cognitive engine, VDB, graph (pre-built image)
+  ape-core:
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/ape-core:stable
+    container_name: ape_core
     restart: unless-stopped
     ports:
       - "8069:8069"  # HTTP API (MCP at /mcp when enabled)
@@ -137,10 +137,10 @@ services:
       timeout: 5s
       retries: 3
 
-  # Wrapper - Agentic orchestrator with APE tools (pre-built image)
-  wrapper:
-    image: ghcr.io/real-wimpsquad/atomic-pumpkin/wrapper:stable
-    container_name: ape_wrapper
+  # APE API - OAuth, orchestration, LLM proxy (pre-built image)
+  ape-api:
+    image: ghcr.io/real-wimpsquad/atomic-pumpkin/ape-api:stable
+    container_name: ape_api
     restart: unless-stopped
     ports:
       - "8070:8070"
@@ -159,7 +159,7 @@ services:
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
     depends_on:
-      engine:
+      ape-core:
         condition: service_healthy
       litellm:
         condition: service_healthy

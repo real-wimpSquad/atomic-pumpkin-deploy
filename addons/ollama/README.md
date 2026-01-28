@@ -155,6 +155,6 @@ docker system df -v
 ```
 
 **Models not appearing in APEChat:**
-1. Ensure wrapper can reach Ollama: `curl http://ollama:11434/api/tags` from wrapper container
-2. Restart wrapper: `docker-compose restart wrapper`
+1. Ensure ape-api can reach Ollama: `curl http://ollama:11434/api/tags` from ape-api container
+2. Restart ape-api: `docker-compose restart ape-api`
 3. Re-discover in Settings → Ollama Manager

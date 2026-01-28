@@ -44,7 +44,7 @@ Visit: http://localhost:3000
 ```
 User types message
   ↓
-UI → wrapper:8070
+UI → ape-api:8070
   ↓
 Wrapper stores verbatim to Redis (1hr TTL, last 10 msgs)
 Wrapper queries APE session history
@@ -68,8 +68,8 @@ Sidebar shows simple context hints (LLM-curated)
 - Prod: SvelteKit hooks in `src/hooks.server.ts`
 
 Both proxy:
-- `/v1/*` → wrapper (LiteLLM)
-- `/api/ape/*` → APE engine
+- `/v1/*` → ape-api (LiteLLM)
+- `/api/ape/*` → ape-core
 
 ## Philosophy
 
