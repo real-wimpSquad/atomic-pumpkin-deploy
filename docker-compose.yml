@@ -123,6 +123,7 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
       - DATABASE_URL=postgresql://litellm:litellm_pass@postgres:5432/litellm
+      - STORE_MODEL_IN_DB=True
     command: ["--config", "/app/config.yaml", "--port", "4000"]
     depends_on:
       postgres:
