@@ -29,20 +29,26 @@ services:
     networks:
       - atomic_pumpkin
 
-  # Engine Server (pre-built image)
+  # Engine Server (pre-built image, with optional MCP transport)
   engine:
     image: ghcr.io/real-wimpsquad/atomic-pumpkin/engine:stable
     container_name: engine
     restart: unless-stopped
     ports:
-      - "8069:8069"  # HTTP API
+      - "8069:8069"  # HTTP API (MCP at /mcp when enabled)
     volumes:
       - ./project_vdb:/app/project_vdb
     environment:
       - PYTHONUNBUFFERED=1
       - PORT=8069
+      - MCP_ENABLED=${MCP_ENABLED:-false}
+      - CODE_THUMBS_ENABLED=${CODE_THUMBS_ENABLED:-false}
+      - REDIS_URL=redis://redis:6379
+      - CODE_THUMBS_URL=http://code_thumbs_api:8072
+      - OAUTH_URL=${OAUTH_URL:-https://auth.wimps.win}
     depends_on:
       - qdrant
+      - redis
     networks:
       - atomic_pumpkin
     healthcheck:
