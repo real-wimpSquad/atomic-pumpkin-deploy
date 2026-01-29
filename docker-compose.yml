@@ -42,6 +42,7 @@ services:
       - PYTHONUNBUFFERED=1
       - PORT=8069
       - MCP_ENABLED=${MCP_ENABLED:-false}
+      - MCP_STATELESS=${MCP_STATELESS:-true}
       - CODE_THUMBS_ENABLED=${CODE_THUMBS_ENABLED:-false}
       - REDIS_URL=redis://redis:6379
       - CODE_THUMBS_URL=http://code_thumbs_api:8072
