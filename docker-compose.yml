@@ -47,9 +47,12 @@ services:
       - REDIS_URL=redis://redis:6379
       - CODE_THUMBS_URL=http://code_thumbs_api:8072
       - OAUTH_URL=${OAUTH_URL:-https://auth.wimps.win}
+      - LITELLM_URL=http://litellm:4000
+      - DATABASE_URL=postgresql://litellm:litellm_pass@postgres:5432/litellm
     depends_on:
       - qdrant
       - redis
+      - postgres
     networks:
       - atomic_pumpkin
     healthcheck:
@@ -57,6 +60,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
 
   # Postgres - LiteLLM database (internal only)
   postgres:
@@ -111,6 +115,7 @@ services:
       retries: 3
 
   # LiteLLM - Unified provider proxy (internal only, accessed via wrapper)
+  # Note: Can take 30-60s to initialize database on first start
   litellm:
     image: ghcr.io/berriai/litellm:main-latest
     container_name: ape_litellm
@@ -132,11 +137,13 @@ services:
       - atomic_pumpkin
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/readiness', timeout=5).read()"]
-      interval: 15s
+      interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 60s
 
   # APE API - OAuth, orchestration, LLM proxy (pre-built image)
+  # Note: Performs model seeding from litellm_config.yaml on startup (with retry logic)
   ape-api:
     image: ghcr.io/real-wimpsquad/atomic-pumpkin/ape-api:stable
     container_name: ape_api
@@ -169,9 +176,10 @@ services:
       - atomic_pumpkin
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8070/health', timeout=5).read()"]
-      interval: 30s
+      interval: 20s
       timeout: 10s
-      retries: 3
+      retries: 5
+      start_period: 90s
 
 volumes:
   postgres_data:
