@@ -5,14 +5,14 @@
 # Usage: make ADDONS="apechat ollama mcp-server code-thumbs"
 
 ADDONS ?=
-AVAILABLE_ADDONS := apechat ollama code-thumbs mcp-server
+AVAILABLE_ADDONS := apechat ollama code-thumbs
 
 # Build compose file list
 define build_compose_files
 	$(eval COMPOSE_FILES := -f docker-compose.yml)
 	$(foreach addon,$(ADDONS),\
 		$(if $(filter $(addon),$(AVAILABLE_ADDONS)),\
-			$(eval COMPOSE_FILES += -f addons/$(addon)/docker-compose.$(addon).prod.yml),\
+			$(eval COMPOSE_FILES += -f addons/$(addon)/docker-compose.$(addon).yml),\
 			$(error Unknown addon: $(addon). Available: $(AVAILABLE_ADDONS))\
 		)\
 	)
@@ -26,14 +26,12 @@ help:
 	@echo "Quick Start:"
 	@echo "  make                         - Core stack only"
 	@echo "  make ADDONS=\"apechat\"         - Core + APEChat UI"
-	@echo "  make ADDONS=\"mcp-server\"      - Core + MCP Server"
-	@echo "  make ADDONS=\"apechat mcp-server ollama\" - Full stack"
+	@echo "  make ADDONS=\"apechat ollama\"  - Full stack with local LLMs"
 	@echo ""
 	@echo "Available Addons:"
 	@echo "  apechat      - Web UI for chat interface"
 	@echo "  ollama       - Local LLM server (Llama, Qwen, etc.)"
 	@echo "  code-thumbs  - Multi-language formatter/linter"
-	@echo "  mcp-server   - SSE transport for Claude Desktop/CLI"
 	@echo ""
 	@echo "Commands:"
 	@echo "  make [start]             - Start services (default)"
@@ -45,10 +43,10 @@ help:
 	@echo "  make backup              - Create timestamped tarball backup"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make                                  # Minimal stack"
-	@echo "  make ADDONS=\"apechat\"                  # + Web UI"
-	@echo "  make ADDONS=\"apechat mcp-server\"       # + Web UI + MCP"
-	@echo "  make ADDONS=\"apechat mcp-server ollama\" # Full stack"
+	@echo "  make                                # Minimal stack"
+	@echo "  make ADDONS=\"apechat\"                # + Web UI"
+	@echo "  make ADDONS=\"apechat ollama\"         # + Web UI + Local LLMs"
+	@echo "  make ADDONS=\"apechat code-thumbs\"    # + Web UI + Code Tools"
 	@echo ""
 
 start:
@@ -66,13 +64,16 @@ start:
 	@echo "✓ Services started"
 	@echo ""
 	@echo "Access points:"
-	@echo "  Engine:  http://localhost:8069"
-	@echo "  Wrapper: http://localhost:8070"
+	@echo "  Core API:    http://localhost:8069"
+	@echo "  Wrapper API: http://localhost:8070"
 	@if echo "$(ADDONS)" | grep -q "apechat"; then \
-		echo "  APEChat: http://localhost:8072"; \
+		echo "  APEChat UI:  http://localhost:3080"; \
 	fi
-	@if echo "$(ADDONS)" | grep -q "mcp-server"; then \
-		echo "  MCP:     http://localhost:8071"; \
+	@if echo "$(ADDONS)" | grep -q "ollama"; then \
+		echo "  Ollama:      http://localhost:11434"; \
+	fi
+	@if echo "$(ADDONS)" | grep -q "code-thumbs"; then \
+		echo "  Code Thumbs: http://localhost:8072"; \
 	fi
 
 up: start
